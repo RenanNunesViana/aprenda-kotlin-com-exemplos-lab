@@ -1,5 +1,3 @@
-
-
 enum class Nivel { BASICO, INTERMEDIARIO, DIFICIL }
 
 data class Usuario(val id:String, var nome:String, var pontuacao:Int = 0){
@@ -16,7 +14,7 @@ data class Usuario(val id:String, var nome:String, var pontuacao:Int = 0){
     }
 }
 
-fun registrarUsuario(usuario:Usuario?, dataSource: MutableSet<Usuario>){
+fun registrarUsuario(usuario:Usuario?, dataSource: MutableList<Usuario>){
     if(usuario === null) throw NullPointerException()
     if(dataSource.contains(usuario)) throw IllegalArgumentException("Usuário já cadastrado no sistema")
     else dataSource.add(usuario)
@@ -24,8 +22,12 @@ fun registrarUsuario(usuario:Usuario?, dataSource: MutableSet<Usuario>){
 
 data class ConteudoEducacional(var nome: String, val duracao: Int = 60)
 
-data class Formacao(val id : Int, val nome: String, val nivel:Nivel, val conteudos: List<ConteudoEducacional>) {
-
+//usei var somente para fazer uso do padrão builder usando o método apply (quis brincar com o recurso)
+data class Formacao(var id : Int = 0,
+                    var nome: String = "",
+                    var nivel:Nivel = Nivel.BASICO, 
+                    var conteudos: List<ConteudoEducacional> = listOf()) {
+    
     val inscritos = mutableListOf<Usuario>()
     
     fun matricular(usuario: Usuario?) {
@@ -39,20 +41,48 @@ data class Formacao(val id : Int, val nome: String, val nivel:Nivel, val conteud
 }
 
 fun main() {
-    val dataSourceUsuarios : MutableSet<Usuario> = mutableSetOf()
+    val dataSourceUsuarios : MutableList<Usuario> = mutableListOf()
 	
     //por motivo de economia de esforço, pois a implementação seria semelhante
     //ao registro de usuario, as formações estão sendo inseridas diretamente
     //no dataSourceFormacao.
-    val dataSourceFormacao : MutableSet<Formacao> = mutableSetOf(
-        Formacao(1, form1, Nivel.BASICO),
-        Formacao(2, form2, Nivel.INTERMEDIARIO),
-        Formacao(3, form3, Nivel.DEFICIL),
-        Formacao(4, form4, Nivel.DIFICIL),
-        Formacao(5, form5, Nivel.INTERMEDIARIO),
+    val dataSourceFormacao : MutableList<Formacao> = mutableListOf(
+        Formacao().apply{
+        	id = 1
+            nome = "form1"
+            nivel = Nivel.BASICO
+            conteudos = listOf(
+            	ConteudoEducacional("aula1"),
+                ConteudoEducacional("aula2"),
+                ConteudoEducacional("aula3")
+            )
+        },
+        Formacao().apply{
+            id = 2
+            nome = "form2"
+            nivel = Nivel.INTERMEDIARIO
+            conteudos = listOf(
+            	ConteudoEducacional("aula1"),
+                ConteudoEducacional("aula2"),
+                ConteudoEducacional("aula3")
+            )
+        },
+        Formacao().apply(){
+            id = 3
+            nome = "form3"
+            nivel = Nivel.DIFICIL
+            conteudos = listOf(
+            	ConteudoEducacional("aula1"),
+                ConteudoEducacional("aula2"),
+                ConteudoEducacional("aula3")
+            )
+        }
+        
     )
     
     registrarUsuario(Usuario("1", "jorge"), dataSourceUsuarios)
+    
+    //print para saber se o usuario foi adicionado e equals funcionando
     println(dataSourceUsuarios.contains(Usuario("2", "jorge")))
     println(dataSourceUsuarios.contains(Usuario("1", "jorge")))
     
@@ -60,5 +90,21 @@ fun main() {
     registrarUsuario(Usuario("3", "jorg"), dataSourceUsuarios)
     registrarUsuario(Usuario("4", "jor"), dataSourceUsuarios)
     registrarUsuario(Usuario("5", "jo"), dataSourceUsuarios)
-        
+    
+    val formacao1 = dataSourceFormacao.get(0)
+    val usuario1 = dataSourceUsuarios.get(0)
+    
+    println(formacao1)
+    println(usuario1)
+    
+    formacao1.matricular(usuario1)
+    
+    println(usuario1.pontuacao)
+    println("lista de inscritos: ${formacao1.inscritos}")
+    
+    println(dataSourceFormacao.get(2).matricular(usuario1))
+    
+    println(usuario1)
+    
+    formacao1.matricular(null)
 }
